@@ -1,0 +1,12 @@
+{
+  "globals": ["vim"],
+  "workspace": {
+    "library": [
+      "${3rd}/luv/library",
+      "${3rd}/busted/library",
+      "${3rd}/nvim/runtime"
+    ],
+    "maxPreload": 1000,
+    "preloadFileSize": 1000
+  }
+}
