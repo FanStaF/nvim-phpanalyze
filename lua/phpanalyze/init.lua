@@ -3,6 +3,7 @@ local fanstaf = {}
 local default_config = {
     auto_jump = false,
     open_qflist = true,
+    skip_ignored_error_pattern_lines = true;
 }
 local user_config = {}
 
@@ -111,7 +112,7 @@ fanstaf.run_phpanalyze_async = function(opts)
 
                     for _, line in ipairs(output) do
                         -- ignore lines starting with "Ignored error pattern"
-                        if line:find("Ignored error pattern") then
+                        if opts.skip_ignored_error_pattern_lines and line:find("Ignored error pattern") then
                             ignored_count = ignored_count + 1
                         else
                             local file, lnum, msg = line:match("^%s*([^:]+%.php):(%d+):%s*(.+)")
@@ -127,12 +128,12 @@ fanstaf.run_phpanalyze_async = function(opts)
                     end
 
                     -- add info line if any 'Ignored error pattern' lines where skipped
-                    if ignored_count > 0 then
+                    if opts.skip_ignored_error_pattern_lines and ignored_count > 0 then
                         table.insert(items, 1, {
                             filename = "",
                             lnum = 0,
                             col = 0,
-                            text = string.format("%d ignored error pattern line%s found", ignored_count, ignored_count > 1 and "s" or "")
+                            text = string.format("%d lines with 'Ignored error pattern' skipped", ignored_count, ignored_count > 1 and "s" or "")
                         })
                     end
 
@@ -154,6 +155,9 @@ fanstaf.run_phpanalyze_async = function(opts)
                         final_level = vim.log.levels.WARN
                     else
                         final_msg = "✅ " .. tool_name .. " finished: No issues!"
+                        if ignored_count > 0 then
+                            final_msg = final_msg .. " (But " .. ignored_count .. " lines with 'Ignored error pattern ' skipped)"
+                        end
                         final_level = vim.log.levels.INFO
                     end
 
