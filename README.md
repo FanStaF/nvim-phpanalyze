@@ -22,9 +22,20 @@ A lightweight Neovim plugin to run [PHPStan](https://phpstan.org/) asynchronousl
 {
   "fanstaf/nvim-phpanalyze",
   config = function()
-    require("phpstan").setup()
+    require("fanstaf.phpanalyze").setup()
   end,
 }
+```
+
+## 🔧 Configuration
+
+`nvim-phpanalyze` supports optional configuration via `.setup()`:
+
+```lua
+require("phpstan").setup({
+  auto_jump = true,     -- Jump to first quickfix entry after analysis (default: false)
+  open_qflist = true,   -- Open quickfix list automatically if issues are found (default: true)
+})
 ```
 
 ## TODO

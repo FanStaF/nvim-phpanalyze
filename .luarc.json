@@ -1,5 +1,7 @@
 {
-  "globals": ["vim"],
+  "diagnostics": {
+    "globals": ["vim"]
+  },
   "workspace": {
     "library": [
       "${3rd}/luv/library",

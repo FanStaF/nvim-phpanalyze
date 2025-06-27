@@ -1,5 +1,11 @@
 local fanstaf = {}
 
+local default_config = {
+    auto_jump = false,
+    open_qflist = true,
+}
+local user_config = {}
+
 -- Detect root using .git, composer.json, or phpstan.neon
 local function detect_project_root()
     local path_sep = package.config:sub(1, 1)
@@ -72,7 +78,7 @@ end
 
 -- Main async function
 fanstaf.run_phpanalyze_async = function(opts)
-    opts = opts or {}
+    opts = vim.tbl_deep_extend("force", default_config, opts or {})
     local tool_name = opts.tool or "PHPStan"
     local root = detect_project_root() or "."
 
@@ -145,11 +151,15 @@ fanstaf.run_phpanalyze_async = function(opts)
                             end
                         end
 
-                        -- Open quickfix with a height of 6 lines
-                        vim.cmd("botright copen 6")
+                        -- conditionally Open quickfix with a height of 6 lines
+                        if opts.open_qflist then
+                            vim.cmd("botright copen 6")
+                        end
 
-                        -- Jump to the first quickfix item
-                        vim.cmd("cfirst")
+                        -- conditionally jump to the first quickfix item
+                        if opts.auto_jump then
+                            vim.cmd("cfirst")
+                        end
                     end
                 end)
 
@@ -166,12 +176,11 @@ fanstaf.run_phpanalyze_async = function(opts)
 end
 
 fanstaf.setup = function(opts)
-    local local_opts = opts or {}
+    user_config = vim.tbl_deep_extend("force", default_config, opts or {})
 
     vim.api.nvim_create_user_command("PhpAnalyze", function()
-        fanstaf.run_phpanalyze_async(local_opts)
+        fanstaf.run_phpanalyze_async(user_config)
     end, {})
 end
 
 return fanstaf
-
