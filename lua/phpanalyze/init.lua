@@ -107,16 +107,33 @@ fanstaf.run_phpanalyze_async = function(opts)
                 local ok, err = pcall(function()
                     local items = {}
 
+                    local ignored_count = 0
+
                     for _, line in ipairs(output) do
-                        local file, lnum, msg = line:match("^%s*([^:]+%.php):(%d+):%s*(.+)")
-                        if file and lnum and msg then
-                            table.insert(items, {
-                                filename = file,
-                                lnum = tonumber(lnum),
-                                col = 1,
-                                text = msg,
-                            })
+                        -- ignore lines starting with "Ignored error pattern"
+                        if line:find("Ignored error pattern") then
+                            ignored_count = ignored_count + 1
+                        else
+                            local file, lnum, msg = line:match("^%s*([^:]+%.php):(%d+):%s*(.+)")
+                            if file and lnum and msg then
+                                table.insert(items, {
+                                    filename = file,
+                                    lnum = tonumber(lnum),
+                                    col = 1,
+                                    text = msg,
+                                })
+                            end
                         end
+                    end
+
+                    -- add info line if any 'Ignored error pattern' lines where skipped
+                    if ignored_count > 0 then
+                        table.insert(items, 1, {
+                            filename = "",
+                            lnum = 0,
+                            col = 0,
+                            text = string.format("%d ignored error pattern line%s found", ignored_count, ignored_count > 1 and "s" or "")
+                        })
                     end
 
                     local final_msg
